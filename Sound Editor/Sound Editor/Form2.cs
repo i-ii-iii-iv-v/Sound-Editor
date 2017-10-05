@@ -28,16 +28,16 @@ namespace Sound_Editor
 
         private void chart1_Click(object sender, EventArgs e)
         {
-            
-            double[] x = new double[8];
-            double[] y = new double[8];
+            int sampleSize = 8;
+            double[] x = new double[sampleSize];
+            double[] y = new double[sampleSize];
             for (int i = 0; i < 8; i++)
             {
                 x[i] = i / 8.0;
                 y[i] = Math.Sin(2 * Math.PI * x[i]);
             }
             chart1.ChartAreas[0].AxisX.Minimum = 0;
-            chart1.ChartAreas[0].AxisX.Maximum = 10;
+            chart1.ChartAreas[0].AxisX.Maximum = x[sampleSize-1] + 10;
             chart1.ChartAreas[0].CursorX.AutoScroll = true;
 
             chart1.ChartAreas[0].AxisX.ScaleView.Zoomable = true;
