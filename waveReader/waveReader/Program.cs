@@ -12,7 +12,7 @@ namespace waveReader
         static void Main(string[] args)
         {
             BinaryReader reader = new BinaryReader(new FileStream("386Hz2074Hz.wav", FileMode.Open));
-            BinaryWriter writer = new BinaryWriter(new FileStream("sav1.wav", FileMode.Create));
+            BinaryWriter writer = new BinaryWriter(new FileStream("sav4.wav", FileMode.Create));
             byte[] sound;
             
             int chunkID = reader.ReadInt32();
@@ -72,15 +72,20 @@ namespace waveReader
 
             Int16[] asInt16 = new Int16[samples];
             Buffer.BlockCopy(sound, 0, asInt16, 0, dataSize);
-            float[] asFloat = Array.ConvertAll(asInt16, e => e / (float)Int16.MaxValue);
-            
+            /*float[] asFloat = Array.ConvertAll(asInt16, e => e / (float)Int16.MaxValue);
+            int c = 0;
+            foreach(float temp in asFloat)
+            {
+                asFloat[c] = temp * 1.3f;
+                c++;
+            }*/
+
             Console.Write("dataID " + dataID + "\n");
             Console.Write("dataSize " + dataSize + "\n");
 
             int counter = 0;
-            foreach (byte temp in sound)
+            foreach (Int16 temp in asInt16)
             {
-                //Console.Write(temp + " ");
                 writer.Write(temp);
                 counter++;
             }
