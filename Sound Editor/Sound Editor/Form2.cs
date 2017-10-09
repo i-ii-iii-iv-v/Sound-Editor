@@ -93,6 +93,8 @@ namespace Sound_Editor
             int endIndex = (int)(xEnd / 0.125);
             int initialCount = initialIndex;
 
+            if (endIndex > (x.Length - 1))
+                return;//message box saying "plz select valid data"
             int size = endIndex - initialIndex + 1;
             tempx = new double[size];
             tempy = new double[size];
