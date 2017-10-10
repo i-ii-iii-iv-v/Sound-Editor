@@ -24,6 +24,8 @@ namespace Sound_Editor
         private int sampleSize;
         private double selectStart;
         private double selectEnd;
+
+        private double zoom;
         public Form2(Form3 form3)
         {
             InitializeComponent();
@@ -45,11 +47,10 @@ namespace Sound_Editor
         private void Form2_Load(object sender, EventArgs e)
         {
             chart1.ChartAreas[0].AxisX.Minimum = 0;
-            chart1.ChartAreas[0].AxisX.Maximum = x[sampleSize - 1] + 5;
+            chart1.ChartAreas[0].AxisX.Maximum = x[x.Length - 1] + 5;
             chart1.ChartAreas[0].CursorX.AutoScroll = true;
 
             chart1.ChartAreas[0].CursorX.SelectionColor = Color.FromArgb(10, 255, 0);
-            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, x[x.Length - 1]);
             chart1.ChartAreas[0].AxisX.ScaleView.Zoomable = false;
             chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
             chart1.ChartAreas[0].CursorX.AutoScroll = true;
@@ -214,9 +215,15 @@ namespace Sound_Editor
 
                 x = pastex;
                 y = pastey;
+                chart1.ChartAreas[0].AxisX.Maximum = x[x.Length -1] + 5;
                 chart1.Series["Wave"].Points.Clear();
                 chart1.Series["Wave"].Points.DataBindXY(x, y);
             }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, chart1.ChartAreas[0].AxisX.Maximum/2);
         }
     }
 }
