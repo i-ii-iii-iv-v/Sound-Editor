@@ -24,7 +24,8 @@ namespace Sound_Editor
         private int sampleSize;
         private double selectStart;
         private double selectEnd;
-
+        private int windowFunction;
+        private double[] weight;
         private double zoom;
         public Form2(Form3 form3)
         {
@@ -35,12 +36,14 @@ namespace Sound_Editor
             sampleSize = 162;
             x = new double[sampleSize];
             y = new double[sampleSize];
+            weight = new double[sampleSize];
             for (int i = 0; i < sampleSize; i++)
             {
                 x[i] = i / (double)8;// this 8 is not sample size
                 y[i] = Math.Sin(2 * Math.PI * x[i]);
+                weight[i] = 1.0f;
             }
-
+            
 
         }
 
@@ -81,6 +84,13 @@ namespace Sound_Editor
             selectEnd = chart1.ChartAreas[0].CursorX.SelectionEnd;
             Console.Write(selectStart + "\n");
             Console.Write(selectEnd + "\n");
+
+            if(selectStart > selectEnd)
+            {
+                double temp = selectStart;
+                selectStart = selectEnd;
+                selectEnd = temp;
+            }
             
         }
 
@@ -191,7 +201,7 @@ namespace Sound_Editor
                     suby1[i] = y[i];
                     subx1[i] = x[i];
                 }
-                subx2 = new double[x.Length - pastePos -1]; //????????????????????
+                subx2 = new double[x.Length - pastePos -1]; 
                 suby2 = new double[x.Length - pastePos -1];
                 for (int i = pastePos+1, j = 0; i < x.Length; i++)
                 {
@@ -224,6 +234,37 @@ namespace Sound_Editor
         private void button4_Click(object sender, EventArgs e)
         {
             chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, chart1.ChartAreas[0].AxisX.Maximum/2);
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            if(radioButton1.Checked)
+            {
+                windowFunction = 0;
+                for(int i = 0; i < sampleSize; i++)
+                {
+                    weight[i] = 1;
+                }
+            }
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            if(radioButton2.Checked)
+            {
+                windowFunction = 1;
+                for (int i = 0; i < sampleSize; i++)
+                    weight[i] = 1 - ((i - (sampleSize - 1) / 2) / ((sampleSize - 1) / 2)) * ((i - (sampleSize - 1) / 2) / ((sampleSize - 1) / 2));
+            }
+        }
+
+        //perform dft on selected samples
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if(selectStart != selectEnd)
+            {
+                //DFT
+            }
         }
     }
 }

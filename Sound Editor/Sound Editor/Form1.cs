@@ -8,11 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-public struct dftd
-{
-    public double real;
-    public double imaginary;
-};
+
 
 namespace Sound_Editor
 {
