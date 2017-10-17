@@ -33,18 +33,25 @@ namespace Sound_Editor
         }
         public void dft(double[] x, double[] y)
         {
-            int S = 40;
-            int N = 10;
+            int S = 8;
+            int N = 8;
             x = new double[N];
             y = new double[N];
+            double[] w = new double[N];//added
             double[] f = new double[N]; //frequency bin
             dftd[] data = new dftd[N]; //real part and imaginary part
             double[] A = new double[N]; //Amplitude
 
+
+            for (int i = 0; i < N; i++)
+                w[i] = 1 - ((i - (N - 1) / 2) / ((N - 1) / 2)) * ((i - (N- 1) / 2) / ((N - 1) / 2));
+
             for (int i = 0; i < N; i++)//sample data in y: s(t)
             {
                 x[i] = i / (double)N;
-                y[i] = Math.Cos(2 * Math.PI * 3 * x[i])*2 + Math.Sin(2 * Math.PI * 14 * x[i])*3;
+                y[i] = Math.Sin(2 * Math.PI * x[i]);
+                if (radioButton2.Checked == true)
+                    y[i] *= w[i];
             }
             for (int i = 0; i < N; i++)
             {
@@ -63,6 +70,22 @@ namespace Sound_Editor
         public void getForm2(Form2 form)
         {
             form2 = form;
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton1.Checked == true)
+            {
+                dft(null, null);
+            }
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            if(radioButton2.Checked==true)
+            {
+                dft(null, null);
+            }
         }
     }
 }
