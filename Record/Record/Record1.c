@@ -11,6 +11,9 @@
 
 EXPORT BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM) ;
 
+BYTE **gpbuffer;
+int *gpiLength;
+
 TCHAR szAppName [] = TEXT ("Record1") ;
 
 HINSTANCE g_hInst = 0;
