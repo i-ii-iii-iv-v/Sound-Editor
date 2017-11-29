@@ -12,7 +12,31 @@ namespace Sound_Editor
 {
     public partial class Form3 : Form
     {
+        //Sampling rate
+        int S;
+        //Number of Samples
+        int N;
+        //x: represents sample number 0~N
+        int[] x;
+        //y: represents data value
+        int[] y;
+
+
+        //weights to use when doing forward fourier transform, always same size as Number of samples
+        double[] w;
+        //frequency bins: maxFrequency*N/S
+        double[] f;
+        //amplitude of each frequency in frequency domain graph
+        double[] A;
+
+
+        //object of frequency domain graph
         private Form2 form2;
+
+        /// <summary>
+        /// initialization
+        /// </summary>
+        /// <param name="form2">initialized from parent window form1</param>
         public Form3(Form2 form2)
         {
             InitializeComponent();
@@ -21,6 +45,9 @@ namespace Sound_Editor
 
         }
 
+        /// <summary>
+        /// real and imaginary parts for forward fouriers
+        /// </summary>
         public struct dftd
         {
             public double real;
@@ -29,30 +56,35 @@ namespace Sound_Editor
 
         private void Form3_Load(object sender, EventArgs e)
         {
-            dft(null, null);
+            //???
+            //dft(null, null);
         }
-        public void dft(double[] x, double[] y)
+
+        /// <summary>
+        /// forword fourier
+        /// </summary>
+        /// <param name="x">don't actually need</param>
+        /// <param name="y">values to fourier</param>
+        /// 
+        public void dft()
         {
-            int S = 8;
-            int N = 8;
-            x = new double[N];
-            y = new double[N];
-            double[] w = new double[N];//added
-            double[] f = new double[N]; //frequency bin
+            S = 8;
+            N = 8;
+            x = new int[N];
+            y = new int[N];
+            w = new double[N];
+            f = new double[N]; //frequency bin
             dftd[] data = new dftd[N]; //real part and imaginary part
-            double[] A = new double[N]; //Amplitude
-
-
-            for (int i = 0; i < N; i++)
-                w[i] = 1 - ((i - (N - 1) / 2) / ((N - 1) / 2)) * ((i - (N- 1) / 2) / ((N - 1) / 2));
-
+            A = new double[N]; //Amplitude
+            
+            /*
             for (int i = 0; i < N; i++)//sample data in y: s(t)
             {
                 x[i] = i / (double)N;
                 y[i] = Math.Sin(2 * Math.PI * x[i]);
                 if (radioButton2.Checked == true)
                     y[i] *= w[i];
-            }
+            }*/
             for (int i = 0; i < N; i++)
             {
                 for (int j = 0; j < N; j++)
@@ -67,16 +99,53 @@ namespace Sound_Editor
             }
             chart2.Series["AF"].Points.DataBindXY(f, A);
         }
+
+        /// <summary>
+        /// calculuates the weights using welch window function
+        /// </summary>
+        public void welchWindow()
+        {
+
+            for (int i = 0; i < N; i++)
+            {
+                w[i] = 1 - ((i - (N - 1) / 2) / ((N - 1) / 2)) * ((i - (N - 1) / 2) / ((N - 1) / 2));
+            }
+        }
+
+        /// <summary>
+        /// sets window weights to 0
+        /// </summary>
+        public void noWindow()
+        {
+            for (int i = 0; i < N; i++)
+            {
+                w[i] = 0;
+            }
+        }
         public void getForm2(Form2 form)
         {
             form2 = form;
         }
 
+        public void setDataX()
+        {
+            
+        }
+
+        public void setDataY()
+        {
+
+        }
+
+        public void openFile()
+        {
+
+        }
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
             if (radioButton1.Checked == true)
             {
-                dft(null, null);
+                //dft(null, null);
             }
         }
 
@@ -84,7 +153,7 @@ namespace Sound_Editor
         {
             if(radioButton2.Checked==true)
             {
-                dft(null, null);
+                //dft(null, null);
             }
         }
     }

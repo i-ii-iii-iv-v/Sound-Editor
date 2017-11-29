@@ -87,6 +87,7 @@ namespace waveReader
             int counter = 0;
             foreach (Int16 temp in asInt16)
             {
+                //Console.Write(temp + " ");
                 writer.Write(temp);
                 counter++;
             }

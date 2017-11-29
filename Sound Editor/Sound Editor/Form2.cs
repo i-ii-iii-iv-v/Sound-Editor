@@ -13,58 +13,67 @@ namespace Sound_Editor
 {
     public partial class Form2 : Form
     {
-    
+        private Form1 mainForm;
         private Form3 form3;
-        private double[] x;
-        private double[] y;
-        private double[] tempx;
-        private double[] tempy;
-        private double[] pastex;
-        private double[] pastey;
+        private int[] x;
+        private int[] y;
+        private int[] tempx;
+        private int[] tempy;
+        private int[] pastex;
+        private int[] pastey;
         private int sampleSize;
-        private double selectStart;
-        private double selectEnd;
+        private int selectStart;
+        private int selectEnd;
         private int windowFunction;
         private double[] weight;
-        private double zoom;
-        public Form2(Form3 form3)
+        private int zoom;
+        public Form2(byte[] data, Form1 f)
         {
             InitializeComponent();
-            this.form3 = form3;
-            selectStart = 0;
-            selectEnd = 0;
-            sampleSize = 162;
-            x = new double[sampleSize];
-            y = new double[sampleSize];
-            weight = new double[sampleSize];
-            for (int i = 0; i < sampleSize; i++)
+            zoom = 1;
+            mainForm = f;
+            y = new int[data.Length];
+            x = new int[data.Length];
+            for(int i = 0; i < data.Length; i++)
             {
-                x[i] = i / (double)8;// this 8 is not sample size
-                y[i] = Math.Sin(2 * Math.PI * x[i]);
-                weight[i] = 1.0f;
+                y[i] = data[i];
+                x[i] = i;
             }
-            
-
+            Console.WriteLine(data.Length);
         }
 
+        public Form2(Int16[] data, Form1 f)
+        {
+            InitializeComponent();
+            zoom = 1;
+            mainForm = f;
+            y = new int[data.Length];
+            x = new int[data.Length];
+            for (int i = 0; i < data.Length; i++)
+            {
+                y[i] = data[i];
+                x[i] = i;
+            }
+        }
         private void Form2_Load(object sender, EventArgs e)
         {
             chart1.ChartAreas[0].AxisX.Minimum = 0;
-            chart1.ChartAreas[0].AxisX.Maximum = x[x.Length - 1] + 5;
+            chart1.ChartAreas[0].AxisX.Maximum = x[x.Length - 1] + 1;
             chart1.ChartAreas[0].CursorX.AutoScroll = true;
 
             chart1.ChartAreas[0].CursorX.SelectionColor = Color.FromArgb(10, 255, 0);
+            
             chart1.ChartAreas[0].AxisX.ScaleView.Zoomable = false;
             chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
             chart1.ChartAreas[0].CursorX.AutoScroll = true;
-            chart1.ChartAreas[0].CursorX.Interval = 1 / 8.0;
+            chart1.ChartAreas[0].CursorX.Interval = 1;
             chart1.ChartAreas[0].AxisX.ScaleView.SizeType = DateTimeIntervalType.Number;
             //chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 1000);
             chart1.ChartAreas[0].AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.SmallScroll;
             chart1.ChartAreas[0].AxisX.ScaleView.SmallScrollSize = 0.5;
-
+            
             chart1.Series["Wave"].Points.DataBindXY(x, y);
-            form3.dft(x, y);
+            //form3.dft(x, y);
         }
 
         private void chart1_Click(object sender, EventArgs e)
@@ -80,160 +89,35 @@ namespace Sound_Editor
 
         private void chart1_SelectionRangeChanged(object sender, CursorEventArgs e)
         {
-            selectStart = chart1.ChartAreas[0].CursorX.SelectionStart;
-            selectEnd = chart1.ChartAreas[0].CursorX.SelectionEnd;
+            selectStart = (int)chart1.ChartAreas[0].CursorX.SelectionStart;
+            selectEnd = (int)chart1.ChartAreas[0].CursorX.SelectionEnd;
             Console.Write(selectStart + "\n");
             Console.Write(selectEnd + "\n");
 
             if(selectStart > selectEnd)
             {
-                double temp = selectStart;
+                int temp = selectStart;
                 selectStart = selectEnd;
                 selectEnd = temp;
             }
-            
-        }
 
-        //copying to clipboard
-        private void button1_Click(object sender, EventArgs e)
-        {
-            double xInitial = selectStart;
-            double xEnd = selectEnd;
-
-            int initialIndex = (int)(xInitial / 0.125);
-            int endIndex = (int)(xEnd / 0.125);
-            int initialCount = initialIndex;
-
-            if (endIndex > (x.Length - 1))
-                return;//message box saying "plz select valid data"
-            int size = endIndex - initialIndex + 1;
-            tempx = new double[size];
-            tempy = new double[size];
-            
-            for (int i = 0; i < size; i++)
+            if (selectEnd >= x.Length)
             {
-                tempx[i] = x[x.Length - 1] + 0.125*(i+1);//change this so that it works for other location pasting
-                tempy[i] = y[initialCount++];
-                Console.WriteLine("temp points: " + tempx[i] + ", " + tempy[i]);
+                selectEnd = x.Length - 1;
             }
-            /*
-            var newx = new double[tempx.Length + x.Length];
-            var newy = new double[tempy.Length + y.Length];
-
-            x.CopyTo(newx, 0);
-            tempx.CopyTo(newx, x.Length);
-
-            y.CopyTo(newy, 0);
-            tempy.CopyTo(newy, y.Length);
-
-            x = newx;
-            y = newy;
-
-            chart1.Series["Wave"].Points.Clear();
-            chart1.Series["Wave"].Points.DataBindXY(x, y);*/
+            if (selectStart >= x.Length)
+            {
+                selectEnd = x.Length - 1;
+            }
 
         }
 
-        //cut
-        private void button2_Click(object sender, EventArgs e)
-        {
-            double xInitial = selectStart;
-            double xEnd = selectEnd;
-            
-            int initialIndex = (int)(xInitial / 0.125);
-            int endIndex = (int)(xEnd / 0.125);
-            int initialCount = initialIndex;
-            if (endIndex > (x.Length - 1))
-                return;//message box saying "plz select valid data"
-            int size = endIndex - initialIndex + 1;
-            tempx = new double[size];
-            tempy = new double[size];
-
-            double[] cutX = new double[x.Length - size];
-            double[] cutY = new double[x.Length - size];
-
-            //stored cut array
-            for (int i = 0; i < size; i++)
-            {
-                tempx[i] = x[x.Length - 1] + 0.125 * (i + 1);
-                tempy[i] = y[initialCount++];
-                Console.WriteLine("temp points: " + tempx[i] + ", " + tempy[i]);
-            }
-
-            //erase the cut array
-            for (int i = 0, j = 0; i < x.Length; i++)
-            {
-                if (i >= initialIndex && i <= endIndex)
-                    continue;
-                cutX[j] = 0.125*(j);
-                cutY[j] = y[i];
-                j++;
-            }
-
-            x = cutX;
-            y = cutY;
-
-            chart1.Series["Wave"].Points.Clear();
-            chart1.Series["Wave"].Points.DataBindXY(x, y);
-        }
-
-        //paste
-        private void button3_Click(object sender, EventArgs e)
-        {
-            
-
-            double[] subx1;
-            double[] suby1;
-            double[] subx2;
-            double[] suby2;
-
-            if(selectStart == selectEnd)
-            {
-                int pastePos = (int)(selectStart / 0.125);
-                pastex = new double[x.Length + tempx.Length];
-                pastey = new double[y.Length + tempy.Length];
-
-                subx1 = new double[pastePos + 1]; //need to store x[pastePos] as well
-                suby1 = new double[pastePos + 1];
-                //divide x into two subarray from point selectStart
-                for (int i = 0; i <= pastePos; i++)
-                {
-                    suby1[i] = y[i];
-                    subx1[i] = x[i];
-                }
-                subx2 = new double[x.Length - pastePos -1]; 
-                suby2 = new double[x.Length - pastePos -1];
-                for (int i = pastePos+1, j = 0; i < x.Length; i++)
-                {
-                    suby2[j] = y[i];
-                    subx2[j] = x[i];
-                    j++;
-                }
-
-                suby1.CopyTo(pastey, 0);
-                tempy.CopyTo(pastey, suby1.Length);
-                suby2.CopyTo(pastey, suby1.Length + tempy.Length);
-
-                subx1.CopyTo(pastex, 0);
-                tempx.CopyTo(pastex, subx1.Length);
-                subx2.CopyTo(pastex, subx1.Length + tempx.Length);
-
-                for(int i= 0; i < pastex.Length; i++)
-                {
-                    pastex[i] = 0.125 * i;
-                }
-
-                x = pastex;
-                y = pastey;
-                chart1.ChartAreas[0].AxisX.Maximum = x[x.Length -1] + 5;
-                chart1.Series["Wave"].Points.Clear();
-                chart1.Series["Wave"].Points.DataBindXY(x, y);
-            }
-        }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, chart1.ChartAreas[0].AxisX.Maximum/2);
+            //edit:2
+            //chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, chart1.ChartAreas[0].AxisX.Maximum/2);
+            
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
@@ -248,6 +132,7 @@ namespace Sound_Editor
             }
         }
 
+        //welch
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
             if(radioButton2.Checked)
@@ -265,6 +150,209 @@ namespace Sound_Editor
             {
                 //DFT
             }
+        }
+
+        /// <summary>
+        /// updataes the time domain graph that has new maximum x axis
+        /// clears the current points and replaces it with new data points
+        /// </summary>
+        private void updateTDGraph()
+        {
+            chart1.ChartAreas[0].AxisX.Minimum = 0;
+            if (x.Length != 0)
+                chart1.ChartAreas[0].AxisX.Maximum = x[x.Length - 1] + 1;
+            else
+                chart1.ChartAreas[0].AxisX.Maximum = 1;
+            chart1.Series["Wave"].Points.Clear();
+            chart1.Series["Wave"].Points.DataBindXY(x, y);
+        }
+
+        /// <summary>
+        /// copies selected points by user and 
+        /// stores it in the tempy array
+        /// </summary>
+        private void copySelected()
+        {
+            int xInitial = selectStart;
+            int xEnd = selectEnd;
+
+            int size = xEnd - xInitial + 1;
+            tempx = new int[size];
+            tempy = new int[size];
+
+            for (int i = 0; i < size; i++)
+            {
+                tempx[i] = i;
+                tempy[i] = y[xInitial + i];
+            }
+        }
+
+
+        /// <summary>
+        /// deletes selected points and assigns it to x and y array
+        /// </summary>
+        private void deleteSelected()
+        {
+            int size = selectEnd - selectStart + 1;
+            int[] cutX = new int[x.Length - size];
+            int[] cutY = new int[x.Length - size];
+
+            //move cut data from original array to temp cut array, cutX & cutY
+            //cutX,Y array will store data with cut data
+            for (int i = 0, j = 0; i < x.Length; i++)
+            {
+                if (i >= selectStart && i <= selectEnd)
+                    continue;
+                cutX[j] = x[j];
+                cutY[j] = y[i];
+                j++;
+            }
+
+            x = cutX;
+            y = cutY;
+        }
+
+
+        /// <summary>
+        /// pastes selected data to the place before specified point
+        /// </summary>
+        private void pasteSelected()
+        {
+            if(tempy == null)
+            {
+                return;
+            }
+            int[] suby1;
+            int[] suby2;
+            pastex = new int[x.Length + tempx.Length];
+            pastey = new int[y.Length + tempy.Length];
+
+            suby1 = new int[selectStart];
+            suby2 = new int[x.Length - selectStart];
+            //divide x into two subarray from point selectStart
+            for (int i = 0; i < selectStart; i++)
+                suby1[i] = y[i];
+
+            for (int i = selectStart, j = 0; i < x.Length; i++, j++)
+                suby2[j] = y[i];
+
+            suby1.CopyTo(pastey, 0);
+            tempy.CopyTo(pastey, suby1.Length);
+            suby2.CopyTo(pastey, suby1.Length + tempy.Length);
+
+            for (int i = 0; i < pastex.Length; i++)
+            {
+                pastex[i] = i;
+            }
+
+            x = pastex;
+            y = pastey;
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            copySelected();
+        }
+
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (selectStart == selectEnd && selectStart != -1)
+            {
+                pasteSelected();
+            }
+            else
+            {
+
+                MessageBox.Show(this, "Please select a point to paste to", "Invalid point",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+                //deleteSelected();
+                //pasteSelected();
+            }
+
+            updateTDGraph();
+        }
+
+        private void cutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(selectStart == -1)
+            {
+                MessageBox.Show(this, "Please select a valid range for cut", "Invalid selection",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            copySelected();
+            deleteSelected();
+
+            selectStart = -1;
+            selectEnd = -1;
+            updateTDGraph();
+        }
+
+        private void zoomSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (selectStart != -1)
+            {
+                chart1.ChartAreas[0].AxisX.ScaleView.Zoom(selectStart, selectEnd);
+            }
+            else
+            {
+                MessageBox.Show(this, "Please select valid range", "Invalid Zoom",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void zoomInToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+            double mult = x.Length / 10;
+            double min = chart1.ChartAreas[0].AxisX.ScaleView.ViewMinimum;
+            double max = chart1.ChartAreas[0].AxisX.ScaleView.ViewMaximum;
+
+            double newMin = min + mult;
+            double newMax = max - mult;
+
+            if(newMin > newMax)
+            {
+                MessageBox.Show(this, "Zoom maximized", "Invalid Zoom",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(newMin, newMax);
+        }
+
+
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void zoomOutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            double mult = x.Length / 10;
+            double min = chart1.ChartAreas[0].AxisX.ScaleView.ViewMinimum;
+            double max = chart1.ChartAreas[0].AxisX.ScaleView.ViewMaximum;
+
+            double newMin = min -  mult;
+            double newMax = max +  mult;
+
+            if (newMin < 0 || newMax > x.Length)
+            {
+                MessageBox.Show(this, "Zoom maximized", "Invalid Zoom",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(newMin, newMax);
+        }
+
+        private void zoomResetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            updateTDGraph();
         }
     }
 }
